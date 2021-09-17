@@ -1,48 +1,112 @@
-import tkinter as tk
+import PySimpleGUI as sg
+import os
+import traceback
+from excel_access import *
+from send_mail import *
 
-fields = 'Expiry Date Title', 'Notification Days', 'Output Columns', 'Receiver Mail'
 
-def fetch(entries):
-    global data
-    data = []
- 
-    for entry in entries:
-        #field = entry[0]
-        text  = entry[1].get()
-        #print('%s: "%s"' % (field, text))
-        data.append(text)   
+# Get last time used parameter
+def load_config_params(config_file=CONFIG_FILE_NAME):
+    if os.path.exists(config_file):
+        return retrive_configfile(config_file)
+    else:
+        return CONFIG_PARAMS
 
-def getdata():
-    return data
+#Update the input values
+def update_config_params(input_values,config_params=CONFIG_PARAMS):
+    config_params["file_path"]      = input_values[0]
+    config_params["reminder_days"]  = int(input_values[1])
+    config_params["expiry_title"]   = input_values[2]
+    config_params["output_columns"] = [x.strip(' ') for x in input_values[3].split(',')]
+    config_params["email"]          = input_values[4]
     
-        
+    #update the config json file
+    update_configfile(config_params)
 
-def makeform(root, fields):
-    entries = []
-    for field in fields:
-        row = tk.Frame(root)
-        lab = tk.Label(row, width=15, text=field, anchor='w')
-        ent = tk.Entry(row)
-        row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-        lab.pack(side=tk.LEFT)
-        ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
-        entries.append((field, ent))
-    return entries
-
-def main_func():
-    root = tk.Tk()
-    root.title("Vehicle Access Card Notification Reminder")
-    root.geometry("400x200")
-    ents = makeform(root, fields)
-    root.bind('<Return>', (lambda event, e=ents: fetch(e)))   
-    b1 = tk.Button(root, text='Submit',
-                  command=(lambda e=ents: fetch(e)))
-    b1.pack(side=tk.LEFT, padx=5, pady=5)
-    b2 = tk.Button(root, text='Quit', command=root.quit)
-    b2.pack(side=tk.LEFT, padx=5, pady=5)
-    root.mainloop()
+#Error msg & Alert msg
+def error_msg(msg):
+    return sg.popup(msg, title="ALERT", button_color="red", keep_on_top=True)
+    
+                   
+    
 
 
 
+if __name__ == '__main__':
+    
+    config_params = load_config_params()
+    
+    # Add a touch of color
+    sg.theme('DarkAmber')   
 
-   
+    # All the stuff inside your window.
+    layout = [
+            [sg.Text('File: ', size=(35,2)), sg.Input(config_params["file_path"]), sg.FileBrowse()],
+            [sg.Text('Reminder Days Count: ', size=(35,2)), sg.InputText(config_params["reminder_days"])],
+            [sg.Text('Expiry Date Title: ', size=(35,2)), sg.InputText(config_params["expiry_title"])],
+            [sg.Text('Output File Columns: ', size=(35,2)), sg.InputText(", ".join(config_params["output_columns"]))],
+            [sg.Text('Receiver Mail: ', size=(35,2)), sg.InputText(config_params["email"])],
+            [sg.Button('Submit'), sg.Button('Cancel')]
+            ]
+
+    # Create the Window
+    window = sg.Window('Expiry Notification Reminder', layout)
+    
+    try:
+        # Event Loop to process "events" and get the "values" of the inputs
+        while True:
+            event, input_values = window.read()
+
+            #close the action
+            if event in (None, 'Cancel'):
+                 break
+            
+            #submit function 
+            elif event == 'Submit':
+                #Input Field Validation
+                if not '.xlsx' in input_values[0]:
+                    sg.popup('Please Select Excel File !',text_color='Red')
+                elif not input_values[1]:
+                    error_msg( 'Please Fill Reminder Days Count !')   
+                elif not input_values[2]:
+                    error_msg( 'Please Fill Expiry Date Title !')
+                elif not input_values[3]:
+                    error_msg( 'Please Fill Output File Columns !')
+                elif not input_values[4]:
+                    error_msg( 'Please Fill Receiver Mail !')
+                elif not input_values[1].isdigit():
+                    error_msg( 'Reminder Days Count should be an integer !')
+                else:
+                    #config json file access
+                    update_config_params(input_values)
+                    #get parameters
+                    config_params = retrive_configfile(CONFIG_FILE_NAME)
+
+                    #Excel process functions
+                    config_params = retrive_configfile(CONFIG_FILE_NAME)
+                    result = parse_xlsx_header(config_params)
+                
+                    #Excel Column Validation
+                    if not(result[0] is None):
+                        error_msg(result[0])
+                    else:
+                        data = get_xlsx_data(result[1])
+                        filtered_data = filter_data(data, config_params)
+                        #Check Filter Data set availabiity
+                        if not filtered_data:
+                            sg.popup('Oops, No Reminder Clients are Available !', title="Message", keep_on_top=True)
+                        else:    
+                            write_xlsx_file(filtered_data,config_params)
+                            #sending mail
+                            send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
+                            sg.popup('Successfully Mail Sent !', title="Message", keep_on_top=True)
+                      
+        #close the window
+        window.close()
+
+    #Display the sytem crash error
+    except Exception as e:
+        tb = traceback.format_exc()
+        sg.popup_error(f'AN EXCEPTION OCCURRED!', e, tb)
+    
+    

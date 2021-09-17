@@ -1,58 +1,39 @@
 import json
 from openpyxl import Workbook, load_workbook
 from datetime import datetime, timedelta, date
-from gui import main_func,getdata
 
-
+#file names
 CONFIG_FILE_NAME = ".config.json"
+OUTPUT_FILE_NAME = "Reminder.xlsx"
 
-# Get following parameters from GUI inputs.
-"""
-config_params = {
-    "receiver_email" : "ravitharan@gmail.com",
-    "notification_days" : 5,
-    "expiry_title" : "Valid till",
-    "output_columns" : ["Name", "Access card no", "Vehicle no"],
+#Parameter Initialization
+CONFIG_PARAMS = {
+    "file_path"         : "",
+    "email"             : "",
+    "reminder_days"     : "",
+    "expiry_title"      : "",
+    "output_columns"    : []
 }
-"""
 
 
-def getConfigData(data): 
-    para = ["expiry_title", "notification_days", "output_columns",  "receiver_email"]
-    config_params = {}
-    
-    for key in para:
-        for val in data:
-            if(key == 'output_columns'):
-                config_params[key] = list(val.split(','))
-            else:
-                config_params[key] = val
-            data.remove(val)
-            break
-        
-    update_configfile(CONFIG_FILE_NAME,config_params)
-    
-    
-    
 
     
-
-def update_configfile(file_name, config_params):
+#update json file
+def update_configfile(config_params,file_name=CONFIG_FILE_NAME):
     with open(file_name, 'w') as fp:
         json.dump(config_params, fp)
-        print('update_configfile')
+        
 
-def retrive_configfile(file_name):
+#retrive parameter from json file
+def retrive_configfile(file_name=CONFIG_FILE_NAME):
     with open(file_name) as fp:
         params = json.load(fp)
-        print('retrive_configfile')
     return params
 
-def parse_xlsx_header(xlsx_file, cfg_params):
-    '''
-    Parse xlsx file and returen column number for expiry date and other output
-    columns. Also returning data start row number
-    '''
+
+#Get Excel activated column number & start row number
+def parse_xlsx_header(cfg_params):
+    error_msg = None
     data_locations = {
         "work_sheet" : None,
         "data_start_row": None,
@@ -62,6 +43,7 @@ def parse_xlsx_header(xlsx_file, cfg_params):
     data_locations["columns"].extend([None for x in cfg_params["output_columns"]])
     num_locations = len(data_locations["columns"])
 
+    xlsx_file = cfg_params["file_path"]
     wb = load_workbook(xlsx_file)
     ws = wb.active
     data_locations["work_sheet"] = ws
@@ -72,23 +54,29 @@ def parse_xlsx_header(xlsx_file, cfg_params):
                 data_locations["columns"][0] = column
                 data_locations["data_start_row"] = row + 1
                 num_locations -= 1
+            
             for column_label in cfg_params["output_columns"]:
                 if ws.cell(row, column).value == column_label:
                     index = cfg_params["output_columns"].index(column_label)
                     data_locations["columns"][1+index] = column
                     num_locations -= 1
+                
             if (num_locations == 0):
                 break
         if (num_locations == 0):
             break
 
-    return data_locations
+    #Show error when column is not exist
+    if(None is data_locations["columns"][0]):
+        error_msg = 'Expiry Title is Not Found !'
+    elif(None in data_locations["columns"]):
+        error_msg = 'Output Column is Not Found !'
+
+    return (error_msg, data_locations)
 
 
+#Get Excel Data sets related columns
 def get_xlsx_data(xlsx_locations):
-    '''
-    Return expiry date and other output columns in a list from the excel file
-    '''
     xlsx_data = []
     ws = xlsx_locations["work_sheet"]
 
@@ -106,11 +94,9 @@ def get_xlsx_data(xlsx_locations):
 
 
 
+#Filter data regarding parameter
 def filter_data(xlsx_data,cfg_params):
-    '''
-    Filter xlsx_data within num_expiry_days. Sort the filtered data
-    '''
-    num_expiry_days = int(cfg_params["notification_days"])
+    num_expiry_days = cfg_params["reminder_days"]
     filtered_data = []
     #reminding days before expired
     remind_day = datetime.now().date() - timedelta(days = num_expiry_days)
@@ -121,14 +107,13 @@ def filter_data(xlsx_data,cfg_params):
                    
     return filtered_data
 
-    
+
+#Write filtered data into output excel file
 def write_xlsx_file(xlsx_data, cfg_params):
-    '''
-    Write filtered data into output xlsx file
-    '''
+    output_file = OUTPUT_FILE_NAME
+    
     wb = Workbook()
     ws = wb.active
-    ws.title = "Reminding Clients"
     
     #write headers
     header = []
@@ -139,21 +124,8 @@ def write_xlsx_file(xlsx_data, cfg_params):
     for row in xlsx_data:
        ws.append(row)
 
-    wb.save('Reminder_VehicleCard_Data.xlsx')
+    wb.save(output_file)
+
+    return output_file
    
  
-if __name__ == '__main__':
-    main_func()
-    data = getdata()
-    print(data)
-    if(data):
-        getConfigData(data)
-        
-    config_params = retrive_configfile(CONFIG_FILE_NAME)
-    if(config_params):
-        locations = parse_xlsx_header('DMM Access cards details.xlsx', config_params)
-        data = get_xlsx_data(locations)
-        filter_data = filter_data(data, config_params)
-        print(filter_data)
-        write_xlsx_file(filter_data,config_params)
-   
