@@ -103,7 +103,7 @@ if __name__ == '__main__':
                         else:    
                             write_xlsx_file(filtered_data,config_params)
                             #sending mail
-                            #send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
+                            send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
                             sg.popup('Successfully Mail Sent !', title="Message", keep_on_top=True)
                       
         #close the window
