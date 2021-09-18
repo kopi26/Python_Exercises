@@ -102,7 +102,7 @@ def filter_data(xlsx_data,cfg_params):
     remind_day = datetime.now().date() - timedelta(days = num_expiry_days)
     
     for data in xlsx_data:
-        if(data[0] < remind_day):
+        if(data[0] == remind_day):
             filtered_data.append(data)       
                    
     return filtered_data

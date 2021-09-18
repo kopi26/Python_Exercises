@@ -3,6 +3,7 @@ import os
 import traceback
 from excel_access import *
 from send_mail import *
+import re
 
 
 # Get last time used parameter
@@ -26,15 +27,17 @@ def update_config_params(input_values,config_params=CONFIG_PARAMS):
 #Error msg & Alert msg
 def error_msg(msg):
     return sg.popup(msg, title="ALERT", button_color="red", keep_on_top=True)
-    
-                   
-    
+
+
 
 
 
 if __name__ == '__main__':
     
     config_params = load_config_params()
+
+    # email validation
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     
     # Add a touch of color
     sg.theme('DarkAmber')   
@@ -76,6 +79,8 @@ if __name__ == '__main__':
                     error_msg( 'Please Fill Receiver Mail !')
                 elif not input_values[1].isdigit():
                     error_msg( 'Reminder Days Count should be an integer !')
+                elif not (re.fullmatch(regex, input_values[4])):
+                    error_msg('Invalid Email !')
                 else:
                     #config json file access
                     update_config_params(input_values)
@@ -98,7 +103,7 @@ if __name__ == '__main__':
                         else:    
                             write_xlsx_file(filtered_data,config_params)
                             #sending mail
-                            send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
+                            #send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
                             sg.popup('Successfully Mail Sent !', title="Message", keep_on_top=True)
                       
         #close the window
