@@ -80,6 +80,7 @@ if __name__ == '__main__':
                     
                                     
                 
+<<<<<<< HEAD
                     # Add a touch of color
                     sg.theme('DarkAmber')   
 
@@ -180,5 +181,29 @@ if __name__ == '__main__':
                     
     #close the window
     window.close()
+=======
+                    #Excel Column Validation
+                    if not(result[0] is None):
+                        error_msg(result[0])
+                    else:
+                        data = get_xlsx_data(result[1])
+                        filtered_data = filter_data(data, config_params)
+                        #Check Filter Data set availabiity
+                        if not filtered_data:
+                            sg.popup('Oops, No Reminder Clients are Available !', title="Message", keep_on_top=True)
+                        else:    
+                            write_xlsx_file(filtered_data,config_params)
+                            #sending mail
+                            send_email(config_params["email"], "Car park expiry remainder", "", OUTPUT_FILE_NAME)
+                            sg.popup('Successfully Mail Sent !', title="Message", keep_on_top=True)
+                      
+        #close the window
+        window.close()
+
+    #Display the sytem crash error
+    except Exception as e:
+        tb = traceback.format_exc()
+        sg.popup_error(f'AN EXCEPTION OCCURRED!', e, tb)
+>>>>>>> 7f5b8c4b50b69ad215d2fa49354d8afe203b6a4a
     
     
