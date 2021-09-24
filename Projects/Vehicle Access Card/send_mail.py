@@ -32,13 +32,11 @@ import argparse
 
 def create_message(to, subject, message_text):
   """Create a message for an email.
-
   Args:
     sender: Email address of the sender.
     to: Email address of the receiver.
     subject: The subject of the email message.
     message_text: The text of the email message.
-
   Returns:
     An object containing a base64url encoded email object.
   """
@@ -51,14 +49,12 @@ def create_message(to, subject, message_text):
 
 def create_message_with_attachment(to, subject, message_text, file):
   """Create a message for an email.
-
   Args:
     sender: Email address of the sender.
     to: Email address of the receiver.
     subject: The subject of the email message.
     message_text: The text of the email message.
     file: The path to the file to be attached.
-
   Returns:
     An object containing a base64url encoded email object.
   """
@@ -102,19 +98,16 @@ def create_message_with_attachment(to, subject, message_text, file):
 
 def send_message(service, user_id, message):
   """Send an email message.
-
   Args:
     service: Authorized Gmail API service instance.
     user_id: User's email address. The special value "me"
     can be used to indicate the authenticated user.
     message: Message to be sent.
-
   Returns:
     Sent Message.
   """
   message = (service.users().messages().send(userId=user_id, body=message)
                .execute())
-  print(f"email sent")
 
 
 # If modifying these scopes, delete the file token.json.
@@ -145,8 +138,75 @@ def make_googleapi_verification():
     return build('gmail', 'v1', credentials=creds)
 
 
+def encrypt_credential():
+    """ convert credentials.json file into encrypted binary file credentials.bin
+    PROCEDURE:
+    1) Read all contents of credentials.json and save into a string variable.
+    2) Convert the string into bytes by encode()
+    3) Using xor operator convert each byte into another byte value.
+    4) Save the new bytes content into a binary file credentials.bin
+    """
+
+    credential = ''
+    with open('credentials.json','r') as f:
+        data = f.read()
+
+        #encrypt
+        data_bytes = data.encode('ascii')
+        base64_bytes = base64.b64encode(data_bytes)
+        base64_data = base64_bytes.decode('ascii')
+
+        #encode with xor
+        xorKey = 'K';
+        length = len(base64_bytes);
+
+        for i in range(length):
+            base64_data = (base64_data[:i] +
+                         chr(ord(base64_data[i]) ^ ord(xorKey)) +
+                         base64_data[i + 1:]);
+        #convert to bytes  
+        credential = base64_data.encode('ascii')    
+
+    #bin file
+    with open('credentials.bin','wb') as f:
+         f.write(credential)
+
+         
+
+def decrypt_credential():
+    """ convert credentials.bin file into credentials.json file """
+
+    credential=''
+    with open('credentials.bin','rb') as f:
+        data = f.read()
+        
+        #convert to string
+        data = data.decode('ascii')
+
+        #decode with XOR
+        xorKey = 'K';
+        length = len(data);
+
+        for i in range(length):
+            data = (data[:i] +
+                        chr(ord(data[i]) ^ ord(xorKey)) +
+                        data[i + 1:]);
+        #decrypt  
+        base64_bytes = data.encode('ascii')
+        decode_bytes = base64.b64decode(base64_bytes)
+        credential = decode_bytes.decode('ascii')
+
+
+    #json file
+    with open('credentials.json','w') as f:
+         f.write(credential)
+
+         
+
 def send_email(address, title, message, attachment=''):
+    decrypt_credential()
     service = make_googleapi_verification()
+    os.remove('credentials.json')
     if attachment == '':
         message = create_message(address, title, message)
     else:
@@ -168,6 +228,8 @@ def email_main():
     send_email(args.address, args.title, args.message, args.attach)
 
 if __name__ == '__main__':
+    if os.path.exists('credentials.json'):
+        encrypt_credential()
+        os.remove('credentials.json')
     email_main()
 # [END gmail_quickstart]
-
