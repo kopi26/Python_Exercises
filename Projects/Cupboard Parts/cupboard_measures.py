@@ -37,7 +37,7 @@ def measure_count(code, measure):
 
     #set list into tuple               
     measure_list = [tuple(x) for x in measure_list]
-    print(measure_list)
+
     #seperate same measures in same code  
     if code in measure_set:
         for m_list in measure_list:
@@ -72,8 +72,7 @@ def extract_excel(path):
 if __name__ == "__main__":
     path = 'cupboard_parts.xlsx'
     extract_excel(path)    
-"""
+
 #Print values
 for key in measure_set:
     print(key , ':' , measure_set[key])
-"""
