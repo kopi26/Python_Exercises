@@ -46,9 +46,8 @@ def measure_count(code, measure):
                     measure_set[code][index] = list(measure_set[code][index])
                     measure_set[code][index][0] += m_list[0]
                     measure_set[code][index] = tuple(measure_set[code][index])
-                    measure_list.remove(m_list)
                 else:
-                    measure_set[code].extend(measure_list)
+                    measure_set[code].append(m_list)
     else:
         measure_set[code] = measure_list
            
