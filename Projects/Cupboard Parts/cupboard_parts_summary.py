@@ -5,90 +5,10 @@ from parse_cupboard_parts import *
 workbook = None
 cupboard_parts = {}
 cupboard_orders = []
-<<<<<<< HEAD
-
-ordered_materials = []
-ordered_style = []
-ordered_color = []
-ordered_measure = []
-
-#Default Values
-materials = []
-styles = []
-colors = []
-"""
-#Initail Values
-materials = [
-    "MAPLE",
-    "OAK",
-    "MDF",
-    "HARDROCK"
-    ]
-    
-styles = [
-    "RICHMOND FLAT",
-    "RICHMOND RAISED",
-    "ASHTON FLAT",
-    "ASHTON RAISED",
-    "MONACO FLAT",
-    "MONACO RAISED",
-    "HAMPTON FLAT",
-    "HAMPTON RAISED",
-    "SHAKER",
-    "BEADED SHAKER",
-    "FUSION",
-    "URBAN",
-    "MADISON",
-    "SIERRA",
-    "KENZO FLAT",
-    "KENZO RAISED",
-    "LOTUS FLAT",
-    "LOTUS RAISED",
-    "VISTA FLAT",
-    "VISTA RAISED",
-    "CAPRICE FLAT",
-    "CAPRICE RAISED",
-    "RUBY"
-    ]
-colors = [
-    AHM 10 MATTE
-    AHM 10 H/G
-    AHM 20 MATTE
-    AHM 20 BISCUIT H/G
-    AHM 30 MATTE
-    AHM 40 MATTE
-    AHM 1000
-    AHM 1100
-    AHM 1200
-    AHM 1300
-    AHM 1400
-    AHM 1500
-    AHM 1600
-    AHM 1700
-    AHM 1800
-    AHM 1900
-    AHM 2000
-    AHM 2100
-    AHM 2200
-    AHM 2300
-    AHM 2400
-    AHM 2500
-    AHM 2600
-    AHM 2700
-    AHM 2800
-    AHM 2900
-    AHM 3000
-    AHM 3100
-    AHM 3200
-    AHM 3300
-    "AHM 3400",
-    "AHM 3500",
-        ]
-"""
+sort_order = []
 
 
-=======
->>>>>>> 8cdb2fc8ba268931dcc8cf12085aadf7086459c2
+
 
 #get excel access
 def access_excel(path):
@@ -123,65 +43,7 @@ def extract_VANITY_INFO():
                 measure_part = cleanup_data(measure)
                 cupboard_parts[code] = split_parts_details(measure_part,code,row)
 
-<<<<<<< HEAD
-    """                         
-    for code in cupboard_parts:
-        print(code , ':')
-        for part in cupboard_parts[code]:
-            print(part)
-        print()
 
-
-    """
-#Extract cupboard parts default material,style and color data
-def extract__INFO_SHEET():
-    ws = workbook["INFO SHEET"]
-
-    for row in range(1, ws.max_row+1):
-        material_name = ws.cell(row,2).value
-        style_name = ws.cell(row,6).value
-        color_name = ws.cell(row,1).value
-        if material_name != None:
-            if not material_name in materials:
-                materials.append(material_name)
-            else:
-                print(f'DUPLICATE material: {material_name}')
-        if style_name != None:
-            if not style_name in styles:
-                styles.append(style_name)
-            else:
-                print(f'DUPLICATE style: {style_name}')
-        if color_name != None:
-            if not color_name in colors:
-                colors.append(color_name)
-            else:
-                print(f'DUPLICATE color: {color_name}')
-                
-            
-
-def set_ordered_items(material,style,color,row):
-    if material in materials:
-        if not material in ordered_materials:
-            ordered_materials.append(material)
-    else:
-        print(f'INVALID material : {material} -> [ROW: {row}]')
-
-    if style in styles:
-        if not style in ordered_style:
-            ordered_style.append(style)
-    else:
-        print(f'INVALID style : {style} -> [ROW: {row}]')
-
-    if color in colors:
-        if not color in ordered_color:
-            ordered_color.append(color)
-    else:
-        print(f'INVALID color : {color} -> [ROW: {row}]')
-
-    
-
-=======
->>>>>>> 8cdb2fc8ba268931dcc8cf12085aadf7086459c2
     
 #get orders details
 def get_Orders_MAIN_SHEET():
@@ -190,42 +52,7 @@ def get_Orders_MAIN_SHEET():
     
     for row in range(1, ws.max_row+1):
         order_code = ws.cell(row,5).value
-<<<<<<< HEAD
-        if order_code != None:
-            if(isinstance(order_code,int)):
-                material = ws.cell(row,8).value
-                style = ws.cell(row,7).value
-                color = ws.cell(row,9).value
-                #get ordered types of values
-                set_ordered_items(material,style,color,row)
-                
-                if order_code in cupboard_parts:
-                    order_list = cupboard_parts[order_code]
-                    for order in order_list: 
-                        order.insert(1,material)
-                        order.insert(2,style)
-                        order.insert(3,color)
-                        
-                        #join types by underscore
-                        order[1] = '_'.join(order[1:])
 
-                        #remove same items after join from list
-                        del order[2:]
-    
-                        check_list = cupboard_orders.copy()
-                        if cupboard_orders:
-                            for parts in cupboard_orders:
-                                if order[1] in parts[1]:
-                                    index = cupboard_orders.index(parts)
-                                    cupboard_orders[index][0] += order[0]
-                                else:
-                                    check_list.remove(parts)
-                            else:
-                                cupboard_orders.append(order)
-                        
-                        else:
-                            cupboard_orders.append(order)
-=======
         if(isinstance(order_code,int)):
             material = ws.cell(row,8).value.strip()
             style = ws.cell(row,7).value.strip()
@@ -256,10 +83,67 @@ def get_Orders_MAIN_SHEET():
                         cupboard_orders.append(order)
             else:
                 print(f'INVALID order number {order_code} in row {row}')
->>>>>>> 8cdb2fc8ba268931dcc8cf12085aadf7086459c2
-                    
+
+
+
+def sorting_order_parts():
+    material = ''
+    name = ''
+    size = ''
+    style = ''
+
+    #seperate items
     for parts in cupboard_orders:
-        print(parts)
+        order = []
+        order.append(parts[0])
+        order.extend(parts[1].split('_'))
+        sort_order.append(order)
+
+    #sorted list
+    sort_order = sorted(sort_order, key = lambda x: (x[1], x[5], x[4], x[2]))
+
+    #printing values
+    for order in sort_order:
+        if order[1] == material:
+            if order[5] == name: 
+                if order[4] == size:
+                    print(f'               {order[2]} : {order[0]}')
+                else:
+                    size = order[4]
+                    print(f'       {size} :')
+                    print(f'               {order[2]} : {order[0]}')
+                    
+            else:
+                name = order[5]
+                size = order[4]
+                print(f'    {name} :')
+                print(f'       {size} :')
+                print(f'               {order[2]} : {order[0]}')
+        else:
+            material = order[1]
+            name = order[5]
+            size = order[4]
+            print(f'{material} :')
+            print(f'    {name} :')
+            print(f'       {size} :')
+            print(f'               {order[2]} : {order[0]}')
+
+    
+            
+
+        
+            
+        
+    
+
+
+
+
+
+
+    
+
+        
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -269,4 +153,5 @@ if __name__ == "__main__":
     workbook = access_excel(path)
     extract_VANITY_INFO()
     get_Orders_MAIN_SHEET()
+    sorting_order_parts()
    
