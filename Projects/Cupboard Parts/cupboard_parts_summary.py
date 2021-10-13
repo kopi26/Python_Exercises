@@ -4,9 +4,11 @@ from parse_cupboard_parts import *
 workbook = None
 cupboard_parts = {}
 cupboard_orders = []
+
 ordered_materials = []
 ordered_style = []
 ordered_color = []
+ordered_measure = []
 
 #Default Values
 materials = []
@@ -153,7 +155,27 @@ def extract__INFO_SHEET():
                 print(f'DUPLICATE color: {color_name}')
                 
             
-        
+
+def set_ordered_items(material,style,color,row):
+    if material in materials:
+        if not material in ordered_materials:
+            ordered_materials.append(material)
+    else:
+        print(f'INVALID material : {material} -> [ROW: {row}]')
+
+    if style in styles:
+        if not style in ordered_style:
+            ordered_style.append(style)
+    else:
+        print(f'INVALID style : {style} -> [ROW: {row}]')
+
+    if color in colors:
+        if not color in ordered_color:
+            ordered_color.append(color)
+    else:
+        print(f'INVALID color : {color} -> [ROW: {row}]')
+
+    
 
     
 #get orders details
@@ -168,25 +190,12 @@ def get_Orders_MAIN_SHEET():
                 material = ws.cell(row,8).value
                 style = ws.cell(row,7).value
                 color = ws.cell(row,9).value
-                if material in materials:
-                    if not material in ordered_materials:
-                        ordered_materials.append(material)
-                else:
-                    print(f'INVALID material : {material} -> [ROW: {row}]')
-                if style in styles:
-                    if not style in ordered_style:
-                        ordered_style.append(style)
-                else:
-                    print(f'INVALID style : {style}-> [ROW: {row}]')
-                if color in colors:
-                    if not color in ordered_color:
-                        ordered_color.append(color)
-                else:
-                    print(f'INVALID color : {color} -> [ROW: {row}]')
+                #get ordered types of values
+                set_ordered_items(material,style,color,row)
                 
                 if order_code in cupboard_parts:
                     order_list = cupboard_parts[order_code]
-                    for order in order_list:
+                    for order in order_list: 
                         order.insert(1,material)
                         order.insert(2,style)
                         order.insert(3,color)
