@@ -1,11 +1,12 @@
 import sys
 from openpyxl import Workbook, load_workbook
 from parse_cupboard_parts import *
+from write_orderparts_details import *
 
 workbook = None
 cupboard_parts = {}
 cupboard_orders = []
-sort_order = []
+
 
 
 
@@ -87,11 +88,8 @@ def get_Orders_MAIN_SHEET():
 
 
 def sorting_order_parts():
-    material = ''
-    name = ''
-    size = ''
-    style = ''
-
+    sort_order = []
+    
     #seperate items
     for parts in cupboard_orders:
         order = []
@@ -102,45 +100,10 @@ def sorting_order_parts():
     #sorted list
     sort_order = sorted(sort_order, key = lambda x: (x[1], x[5], x[4], x[2]))
 
-    #printing values
-    for order in sort_order:
-        if order[1] == material:
-            if order[5] == name: 
-                if order[4] == size:
-                    print(f'               {order[2]} : {order[0]}')
-                else:
-                    size = order[4]
-                    print(f'       {size} :')
-                    print(f'               {order[2]} : {order[0]}')
-                    
-            else:
-                name = order[5]
-                size = order[4]
-                print(f'    {name} :')
-                print(f'       {size} :')
-                print(f'               {order[2]} : {order[0]}')
-        else:
-            material = order[1]
-            name = order[5]
-            size = order[4]
-            print(f'{material} :')
-            print(f'    {name} :')
-            print(f'       {size} :')
-            print(f'               {order[2]} : {order[0]}')
-
+    return sort_order
     
-            
-
         
-            
         
-    
-
-
-
-
-
-
     
 
         
@@ -153,5 +116,5 @@ if __name__ == "__main__":
     workbook = access_excel(path)
     extract_VANITY_INFO()
     get_Orders_MAIN_SHEET()
-    sorting_order_parts()
+    items = sorting_order_parts()
    

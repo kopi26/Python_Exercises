@@ -73,15 +73,25 @@ def write_part_names(work_sheets, start_row, items, styles):
             
             for i,style in enumerate(styles):
                 style_items = [x for x in size_items if x[2] == style]
-                count = [x[0] for x in style_items]
-                if sum(count):
-                    ws.cell(row,i+3).value = sum(count)
-            
+                
+                if ws.title == "PARTS DETAILS":
+                    count = [x[0] for x in style_items]
+                    if sum(count):
+                        ws.cell(row,i+3).value = sum(count)
+
+                if ws.title == "PARTS COLOR":    
+                    values = ''
+                    for color in colors:
+                        color_items = [x for x in style_items if x[3] == color]
+                        count = [x[0] for x in color_items]
+                        if sum(count):
+                            values += color + ' - ' + str(sum(count)) + '\n'
+                            ws.cell(row,i+3).value = values
             row += 1
-    
-        
  
     return row
+
+
 
 if __name__ == "__main__":
 
@@ -92,7 +102,7 @@ if __name__ == "__main__":
         [2, 'MAPLE', 'SHAKER', 'NATURAL', '11 7/8 X 31 7/8', 'DOOR'],
         [2, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '8 7/8 X 26 1/2', 'DOOR']]
     """
-
+    
     items = [
         [1, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '41 7/8 X 4', 'CLASSIC KICK'],
         [2, 'MAPLE', 'SHAKER', 'AHM 3700', '47 7/8 X 4', 'CLASSIC KICK'],
@@ -143,13 +153,12 @@ if __name__ == "__main__":
         [1, 'MDF', 'VISTA FLAT', 'AHM 40', '71 7/8 X 2 3/4', 'MOULDING'],
         [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 2 3/4', 'TOWER MOULDING']
     ]
-
+    
     
     wb = openpyxl.Workbook()
     wb.create_sheet("PARTS DETAILS")
     wb.create_sheet("PARTS COLOR")
     ws = [ wb["PARTS DETAILS"], wb["PARTS COLOR"] ]
-
     write_parts_for_workshop(ws, items)
 
     wb.save('output.xlsx')
