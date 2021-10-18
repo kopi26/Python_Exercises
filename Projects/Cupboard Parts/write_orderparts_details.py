@@ -1,5 +1,16 @@
 import sys
 import openpyxl
+from openpyxl.styles import *
+
+
+def adjust_column_width(work_sheets):
+    for ws in work_sheets:
+        for column_cells in ws.columns:
+            length = max(len(str(cell.value)) for cell in column_cells)
+            if length > 20:
+                length = 20
+            ws.column_dimensions[column_cells[0].column_letter].width = length+5
+            
 
 def write_parts_for_workshop(work_sheets, items):
     '''
@@ -23,19 +34,33 @@ def write_material_items(work_sheets, start_row, items):
     row = start_row
     for ws in work_sheets:
         ws.cell(row, 1).value = "MATERIAL"
+        ws.cell(row, 1).font = Font(bold=True)
         ws.cell(row, 2).value = items[0][1]
+        ws.cell(row, 2).font = Font(bold=True)
     row += 1
 
     styles = [ x[2] for x in items ]
     styles = list(set(styles))
     styles.sort()
 
+    colors = [ x[3] for x in items ]
+    colors = list(set(colors))
+    colors.sort()
+
     for ws in work_sheets:
         ws.cell(row, 1).value = "ITEM"
+        ws.cell(row, 1).font = Font(bold=True)
         ws.cell(row, 2).value = "SIZE"
+        ws.cell(row, 2).font = Font(bold=True)
 
-        for i, style in enumerate(styles):
-            ws.cell(row, i+3).value = style
+        if ws.title == "PARTS COLOR DETAILS":
+            for i, color in enumerate(colors):
+                ws.cell(row, i+3).value = color
+                ws.cell(row, i+3).font = Font(bold=True)
+        else:
+            for i, style in enumerate(styles):
+                ws.cell(row, i+3).value = style
+                ws.cell(row, i+3).font = Font(bold=True)
     row += 1
 
     part_names = [ x[5] for x in items ]
@@ -44,12 +69,12 @@ def write_material_items(work_sheets, start_row, items):
 
     for part_name in part_names:
         part_items = [x for x in items if x[5] == part_name]
-        row = write_part_names(work_sheets, row, part_items, styles)
-        row += 1
+        row = write_part_names(work_sheets, row, part_items, styles,colors)
+        row += 3
 
     return row
 
-def write_part_names(work_sheets, start_row, items, styles):
+def write_part_names(work_sheets, start_row, items, styles, colors):
     '''
     Write detail for a specific part. Rows contain sizes and columns contain styles
     '''
@@ -57,38 +82,67 @@ def write_part_names(work_sheets, start_row, items, styles):
     sizes = list(set(sizes))
     sizes = sorted(sizes, key = lambda x: int(x.split()[0]))
 
-    colors = [ x[3] for x in items ]
-    colors = list(set(colors))
-    colors.sort()
+    #excel cell styles
+    border_style = Border(top = Side(style='double'), bottom = Side(style='thin'))
 
     
 
-    row = start_row
     for ws in work_sheets:
+        row = start_row
         ws.cell(row,1).value = items[0][5]
+        
+        #for total count
+        tot_count_colors = [0 for x in range(len(colors))]
+        tot_count_styles = [0 for x in range(len(styles))]
         
         for size in sizes:
             ws.cell(row,2).value = size
             size_items  = [x for x in items if x[4] == size]
-            
-            for i,style in enumerate(styles):
-                style_items = [x for x in size_items if x[2] == style]
-                
-                if ws.title == "PARTS DETAILS":
-                    count = [x[0] for x in style_items]
+
+            if ws.title == "PARTS COLOR DETAILS":
+                for i,color in enumerate(colors):
+                    color_items = [x for x in size_items if x[3] == color]
+                    count = [x[0] for x in color_items]
                     if sum(count):
                         ws.cell(row,i+3).value = sum(count)
-
-                if ws.title == "PARTS COLOR":    
-                    values = ''
-                    for color in colors:
-                        color_items = [x for x in style_items if x[3] == color]
-                        count = [x[0] for x in color_items]
+                    
+                    #sum of parts
+                    tot_count_colors[i] += sum(count)
+                    ws.cell(start_row+len(sizes),i+3).value = tot_count_colors[i]
+                    ws.cell(start_row+len(sizes),i+3).border = border_style
+            else:
+                for i,style in enumerate(styles):
+                    style_items = [x for x in size_items if x[2] == style]
+                    
+                    if ws.title == "PARTS STYLE DETAILS":
+                        count = [x[0] for x in style_items]
                         if sum(count):
-                            values += color + ' - ' + str(sum(count)) + '\n'
-                            ws.cell(row,i+3).value = values
+                            ws.cell(row,i+3).value = sum(count)
+                            
+                        #sum of parts
+                        tot_count_styles[i] += sum(count)
+                        ws.cell(start_row+len(sizes),i+3).value = tot_count_styles[i]
+                        ws.cell(start_row+len(sizes),i+3).border = border_style 
+                        
+                    if ws.title == "PARTS COLOR IN STYLES":    
+                        values = ''
+                        for color in colors:
+                            color_items = [x for x in style_items if x[3] == color]
+                            count = [x[0] for x in color_items]
+                            if sum(count):
+                                values += color + ' - ' + str(sum(count)) + '\n'
+                                ws.cell(row,i+3).value = values
+                                if len(style_items) > 1:
+                                    ws.cell(row,i+3).alignment = Alignment(wrap_text=True)
+                                    
+                            #sum of parts
+                            tot_count_styles[i] += sum(count)
+                            ws.cell(start_row+len(sizes),i+3).value = tot_count_styles[i]
+                            ws.cell(start_row+len(sizes),i+3).border = border_style
             row += 1
- 
+                
+    
+            
     return row
 
 
@@ -102,7 +156,7 @@ if __name__ == "__main__":
         [2, 'MAPLE', 'SHAKER', 'NATURAL', '11 7/8 X 31 7/8', 'DOOR'],
         [2, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '8 7/8 X 26 1/2', 'DOOR']]
     """
-    
+    """
     items = [
         [1, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '41 7/8 X 4', 'CLASSIC KICK'],
         [2, 'MAPLE', 'SHAKER', 'AHM 3700', '47 7/8 X 4', 'CLASSIC KICK'],
@@ -154,11 +208,15 @@ if __name__ == "__main__":
         [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 2 3/4', 'TOWER MOULDING']
     ]
     
-    
+   
     wb = openpyxl.Workbook()
-    wb.create_sheet("PARTS DETAILS")
-    wb.create_sheet("PARTS COLOR")
-    ws = [ wb["PARTS DETAILS"], wb["PARTS COLOR"] ]
+    wb.create_sheet("PARTS STYLE DETAILS")
+    wb.create_sheet("PARTS COLOR IN STYLES")
+    wb.create_sheet("PARTS COLOR DETAILS")
+    ws = [ wb["PARTS STYLE DETAILS"], wb["PARTS COLOR IN STYLES"], wb["PARTS COLOR DETAILS"] ]
+
     write_parts_for_workshop(ws, items)
+    adjust_column(ws)
 
     wb.save('output.xlsx')
+    """

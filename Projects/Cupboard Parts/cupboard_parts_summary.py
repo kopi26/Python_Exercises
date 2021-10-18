@@ -1,5 +1,5 @@
 import sys
-from openpyxl import Workbook, load_workbook
+from openpyxl import *
 from parse_cupboard_parts import *
 from write_orderparts_details import *
 
@@ -102,7 +102,19 @@ def sorting_order_parts():
 
     return sort_order
     
-        
+
+def write_excel_orderlist(items):
+    wb = openpyxl.Workbook()
+    wb.create_sheet("PARTS STYLE DETAILS")
+    wb.create_sheet("PARTS COLOR IN STYLES")
+    wb.create_sheet("PARTS COLOR DETAILS")
+    ws = [ wb["PARTS STYLE DETAILS"], wb["PARTS COLOR IN STYLES"], wb["PARTS COLOR DETAILS"] ]
+
+    write_parts_for_workshop(ws, items)
+    adjust_column_width(ws)
+
+    wb.save('output.xlsx')
+    
         
     
 
@@ -117,4 +129,7 @@ if __name__ == "__main__":
     extract_VANITY_INFO()
     get_Orders_MAIN_SHEET()
     items = sorting_order_parts()
+    write_excel_orderlist(items)
+    
+    
    
