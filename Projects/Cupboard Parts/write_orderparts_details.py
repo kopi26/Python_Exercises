@@ -63,9 +63,20 @@ def write_material_items(work_sheets, start_row, items):
                 ws.cell(row, i+3).font = Font(bold=True)
     row += 1
 
-    part_names = [ x[5] for x in items ]
-    part_names = list(set(part_names))
-    part_names.sort()
+    parts = [ x[5] for x in items ]
+    parts = list(set(parts))
+    parts.sort()
+    part_names = []
+
+    #set the order of part names
+    for part in parts:
+        if 'DOOR' in parts:
+            part_names.insert(0,'DOOR')
+            parts.remove('DOOR')
+        if 'DRAWER' in parts:
+            part_names.insert(1,'DRAWER')
+            parts.remove('DRAWER')
+        part_names.append(part)
 
     for part_name in part_names:
         part_items = [x for x in items if x[5] == part_name]
