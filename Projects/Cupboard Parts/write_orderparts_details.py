@@ -141,7 +141,7 @@ def write_part_names(work_sheets, start_row, items, styles, colors):
                             color_items = [x for x in style_items if x[3] == color]
                             count = [x[0] for x in color_items]
                             if sum(count):
-                                values += color + ' - ' + str(sum(count)) + '\n'
+                                values += str(sum(count)) + ' - ' + color + '\n'
                                 ws.cell(row,i+3).value = values
                                 if len(style_items) > 1:
                                     ws.cell(row,i+3).alignment = Alignment(wrap_text=True)
