@@ -108,6 +108,8 @@ def write_excel_orderlist(items):
     wb.create_sheet("PARTS STYLE DETAILS")
     wb.create_sheet("PARTS COLOR IN STYLES")
     wb.create_sheet("PARTS COLOR DETAILS")
+    #remove empty sheet
+    wb.remove(wb["Sheet"])
     ws = [ wb["PARTS STYLE DETAILS"], wb["PARTS COLOR IN STYLES"], wb["PARTS COLOR DETAILS"] ]
 
     write_parts_for_workshop(ws, items)
