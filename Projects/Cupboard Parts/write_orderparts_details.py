@@ -117,10 +117,11 @@ def write_part_names(work_sheets, start_row, items, styles, colors):
                     if sum(count):
                         ws.cell(row,i+3).value = sum(count)
                     
-                    #sum of parts
+                    #count of parts
                     tot_count_colors[i] += sum(count)
                     ws.cell(start_row+len(sizes),i+3).value = tot_count_colors[i]
                     ws.cell(start_row+len(sizes),i+3).border = border_style
+                    
             else:
                 for i,style in enumerate(styles):
                     style_items = [x for x in size_items if x[2] == style]
@@ -130,7 +131,7 @@ def write_part_names(work_sheets, start_row, items, styles, colors):
                         if sum(count):
                             ws.cell(row,i+3).value = sum(count)
                             
-                        #sum of parts
+                        #count of parts
                         tot_count_styles[i] += sum(count)
                         ws.cell(start_row+len(sizes),i+3).value = tot_count_styles[i]
                         ws.cell(start_row+len(sizes),i+3).border = border_style 
@@ -141,93 +142,31 @@ def write_part_names(work_sheets, start_row, items, styles, colors):
                             color_items = [x for x in style_items if x[3] == color]
                             count = [x[0] for x in color_items]
                             if sum(count):
-                                values += color + ' - ' + str(sum(count)) + '\n'
+                                values += str(sum(count)) + ' - ' + color + '\n'
                                 ws.cell(row,i+3).value = values
                                 if len(style_items) > 1:
+                                    row_count = values.count('\n') + 1
                                     ws.cell(row,i+3).alignment = Alignment(wrap_text=True)
+                                    #ws.row_dimensions[row].height = 15 * row_count
                                     
-                            #sum of parts
+                            #count of parts
                             tot_count_styles[i] += sum(count)
                             ws.cell(start_row+len(sizes),i+3).value = tot_count_styles[i]
                             ws.cell(start_row+len(sizes),i+3).border = border_style
             row += 1
-                
-    
+
+        #total of parts
+        ws.cell(start_row+len(sizes),1).value = 'Total'
+        ws.cell(start_row+len(sizes),2).border = border_style
+        if ws.title == "PARTS COLOR DETAILS":
+            ws.cell(start_row+len(sizes),2).value = sum(tot_count_colors)
+        else:
+            ws.cell(start_row+len(sizes),2).value = sum(tot_count_styles)
+            
             
     return row
 
 
 
 if __name__ == "__main__":
-
-    #Use other modules to generate items list as below
-    """
-    items = [[8, 'MAPLE', 'SHAKER', 'AHM 3700', '11 7/8 X 26 1/2', 'DOOR'],
-        [2, 'MAPLE', 'SHAKER', 'AHM 3700', '11 7/8 X 31 7/8', 'DOOR'],
-        [2, 'MAPLE', 'SHAKER', 'NATURAL', '11 7/8 X 31 7/8', 'DOOR'],
-        [2, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '8 7/8 X 26 1/2', 'DOOR']]
-    """
-    """
-    items = [
-        [1, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '41 7/8 X 4', 'CLASSIC KICK'],
-        [2, 'MAPLE', 'SHAKER', 'AHM 3700', '47 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MAPLE', 'SHAKER', 'AHM 3700', '59 7/8 X 4', 'CLASSIC KICK'],
-        [8, 'MAPLE', 'SHAKER', 'AHM 3700', '11 7/8 X 26 1/2', 'DOOR'],
-        [2, 'MAPLE', 'SHAKER', 'AHM 3700', '11 7/8 X 31 7/8', 'DOOR'],
-        [2, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '11 7/8 X 31 7/8', 'DOOR'],
-        [2, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '8 7/8 X 26 1/2', 'DOOR'],
-        [15, 'MAPLE', 'SHAKER', 'AHM 3700', '11 7/8 X 8 3/4', 'DRAWER'],
-        [6, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '11 7/8 X 8 3/4', 'DRAWER'],
-        [1, 'MAPLE', 'CAPRICE FLAT', 'NATURAL', '41 7/8 X 2 3/4', 'MOULDING'],
-        [2, 'MAPLE', 'SHAKER', 'AHM 3700', '47 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MAPLE', 'SHAKER', 'AHM 3700', '59 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'SIERRA FLAT', 'AHM 20 MATTE', '23 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 25', '29 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'SHAKER', 'AHM 50', '35 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 80', '41 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM  10 MATTE', '59 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE', '71 7/8 X 4', 'CLASSIC KICK'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 40', '71 7/8 X 4', 'CLASSIC KICK'],
-        [4, 'MDF', 'VISTA FLAT', 'AHM  10 MATTE', '11 7/8 X 17 9/16', 'DOOR'],
-        [2, 'MDF', 'SIERRA RAISED', 'AHM 10 MATTE', '11 7/8 X 19 1/2', 'DOOR'],
-        [2, 'MDF', 'SHAKER', 'AHM 50', '11 7/8 X 26 1/2', 'DOOR'],
-        [2, 'MDF', 'SIERRA FLAT', 'AHM 20 MATTE', '11 7/8 X 26 1/2', 'DOOR'],
-        [4, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE', '14 7/8 X 17 9/16', 'DOOR'],
-        [4, 'MDF', 'VISTA FLAT', 'AHM 40', '14 7/8 X 17 9/16', 'DOOR'],
-        [2, 'MDF', 'VISTA FLAT', 'AHM 25', '14 7/8 X 26 1/2', 'DOOR'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 26 1/2', 'DOOR'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 44 1/8', 'DOOR'],
-        [2, 'MDF', 'VISTA FLAT', 'AHM 80', '8 7/8 X 26 1/2', 'DOOR'],
-        [3, 'MDF', 'SHAKER', 'AHM 50', '11 7/8 X 8 3/4', 'DRAWER'],
-        [3, 'MDF', 'VISTA FLAT', 'AHM  10 MATTE', '11 7/8 X 8 3/4', 'DRAWER'],
-        [6, 'MDF', 'VISTA FLAT', 'AHM 80', '11 7/8 X 8 3/4', 'DRAWER'],
-        [3, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE', '11 7/8 X 8 3/4', 'DRAWER'],
-        [3, 'MDF', 'VISTA FLAT', 'AHM 40', '11 7/8 X 8 3/4', 'DRAWER'],
-        [2, 'MDF', 'SIERRA RAISED', 'AHM 10 MATTE', '11 7/8 X 9 11/16', 'DRAWER'],
-        [2, 'MDF', 'VISTA FLAT', 'AHM  10 MATTE', '23 7/8 X 8 3/4', 'DRAWER'],
-        [2, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE', '29 7/8 X 8 3/4', 'DRAWER'],
-        [2, 'MDF', 'VISTA FLAT', 'AHM 40', '29 7/8 X 8 3/4', 'DRAWER'],
-        [1, 'MDF', 'SIERRA RAISED', 'AHM 10 MATTE', '35 7/8 X 6 15/16', 'DRAWER'],
-        [1, 'MDF', 'SIERRA FLAT', 'AHM 20 MATTE', '23 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 25', '29 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'SHAKER', 'AHM 50', '35 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 80', '41 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM  10 MATTE', '59 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE', '71 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 40', '71 7/8 X 2 3/4', 'MOULDING'],
-        [1, 'MDF', 'VISTA FLAT', 'AHM 10 MATTE`', '14 7/8 X 2 3/4', 'TOWER MOULDING']
-    ]
-    
-   
-    wb = openpyxl.Workbook()
-    wb.create_sheet("PARTS STYLE DETAILS")
-    wb.create_sheet("PARTS COLOR IN STYLES")
-    wb.create_sheet("PARTS COLOR DETAILS")
-    ws = [ wb["PARTS STYLE DETAILS"], wb["PARTS COLOR IN STYLES"], wb["PARTS COLOR DETAILS"] ]
-
-    write_parts_for_workshop(ws, items)
-    adjust_column(ws)
-
-    wb.save('output.xlsx')
-    """
+    pass
